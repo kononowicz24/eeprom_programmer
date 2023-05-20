@@ -185,7 +185,7 @@ void Read() {
 
   Serial.println(BlockSize);
 
-  for (int y = 0; y < BlockSize / 256; y++) {               // Loop If bin_size is 8k then 8192/256 = 32  times to read 8K of memory
+  for (int y = 0; y < (BlockSize+1) / 256; y++) {               // Loop If bin_size is 8k then 8192/256 = 32  times to read 8K of memory
 
     Serial.println("");
 
@@ -207,7 +207,7 @@ void Read() {
       if ((count > 15) and (x < BUFFERSIZE - 1)) {
         count = 0;
         Serial.println("");
-        printHex((addr + 256 * y + x), 4);
+        printHex((addr + 256 * y + x + 1), 4);
         Serial.print(": ");
       }
     }
@@ -397,6 +397,9 @@ void Write() {
 //###############################################################
 
 void Erase() {
+  set_address_bus(0x0000);
+  data_bus_output();
+  write_data_bus(0xff);
   set_ce(HIGH);
   set_oe(HIGH);
   set_vh(HIGH);
@@ -407,12 +410,12 @@ void Erase() {
   set_ce(LOW);
   delay(350);
   set_ce(HIGH);
-  delayMicroseconds(1);
+  delay(100);
 
   //Turning Off
   set_vh(LOW);
   set_vpp(LOW);
-  delayMicroseconds(1);
+  delay(100);
 
   Serial.println("Erase complete. Run a blank check");
 }
@@ -868,10 +871,10 @@ void getStartAddress() {
 
       Start_Address = StrToHex(input);                              // Convert it
 
-      if ( (Start_Address == 0x0000) || (Start_Address == 0x2000) || (Start_Address == 0x4000) || (Start_Address == 0x6000)
-           || (Start_Address == 0x8000) || (Start_Address == 0xa000) || (Start_Address == 0xc000) || (Start_Address == 0xe000) ) {
+      //if ( (Start_Address == 0x0000) || (Start_Address == 0x2000) || (Start_Address == 0x4000) || (Start_Address == 0x6000)
+      //     || (Start_Address == 0x8000) || (Start_Address == 0xa000) || (Start_Address == 0xc000) || (Start_Address == 0xe000) ) {
         selected = true;
-      }
+      //}
 
     }
 
@@ -898,7 +901,7 @@ void getBlockSize() {
   if (chipType == 1) {
     Serial.println("(1000, 2000, 4000)");
   } else {
-    Serial.println("(1000, 2000, 4000, 6000)");
+    Serial.println("(1000, 2000, 4000, 6000, 8000, a000, c000, e000, (ffff for whole 512 chip) )");
   }
 
   while (selected == false) {
@@ -909,9 +912,9 @@ void getBlockSize() {
 
       BlockSize = StrToHex(input);                              // Convert it
 
-      if ( (BlockSize == 0x1000) || (BlockSize == 0x2000) || (BlockSize == 0x4000) || (BlockSize == 0x6000) ) {
+      //if ( (BlockSize == 0x1000) || (BlockSize == 0x2000) || (BlockSize == 0x4000) || (BlockSize == 0x6000) ) {
         selected = true;
-      }
+      //}
 
     }
 
